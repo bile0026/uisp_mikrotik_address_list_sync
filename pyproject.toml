@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "uisp-mikrotik-address-list-sync"
+version = "0.1.0"
+description = "Sync active and suspended client IP lists from UISP to MikroTik address lists"
+authors = ["bile0026 <zacharybiles@gmail.com>"]
+readme = "README.md"
+packages = [{include = "uisp_mikrotik_address_list_sync"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+netmiko = "^4.2.0"
+ipaddress = "^1.0.23"
+urllib3 = "^2.0.3"
+requests = "^2.31.0"
+configparser = "^6.0.0"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.7.0"
+flake8 = "^6.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
