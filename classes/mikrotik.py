@@ -8,7 +8,12 @@ class MikroTikClientAddress(ClientAddress):
 
     comment: str
     list_name: str
+    state: str
+    entry_id: str
 
-    def __init__(self, ip_address, comment):
+    def __init__(self, ip_address, list_name, comment, state, entry_id):
         super().__init__(ip_address)
+        self.list_name = list_name
         self.comment = comment
+        self.state = state
+        self.entry_id = entry_id

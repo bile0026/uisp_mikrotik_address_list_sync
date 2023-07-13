@@ -36,6 +36,9 @@ def lookup_client_ip(devices, services, client_id):
     for service in services:
         if service.get("clientId") == client_id:
             for device in devices:
-                if device["identification"]["site"].get("id") == service["unmsClientSiteId"]:
-                    return device.get("ipAddress").split('/')[0]
+                if (
+                    device["identification"]["site"].get("id")
+                    == service["unmsClientSiteId"]
+                ):
+                    return device.get("ipAddress").split("/")[0]
     return None

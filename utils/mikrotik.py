@@ -26,8 +26,18 @@ class MikroTikApi(ApiEndpoint):
         self.params = params
         self.headers = {"Accept": "*/*", "Authorization": f"Basic {authentication}"}
 
-    def get_address_list(self):
+    def get_address_list(self, list_name=None):
         """get address-list by name from router"""
-        url = f"ip/firewall/address-list"
-        address_list = self.api_call(path=url)
+        if list_name is None:
+            url = "ip/firewall/address-list"
+            address_list = self.api_call(path=url)
+        else:
+            url = f"ip/firewall/address-list?list={list_name}"
+            address_list = self.api_call(path=url)
         return address_list
+
+    def add_address_to_list(self, ip_address, list_name, comment=""):
+        """add an ip address to an address-list."""
+        url = f"ip/firewall/address-list/add"
+        _data = {"list": list_name, "comment": comment, "address": ip_address}
+        self.api_call(path=url, payload=_data)
