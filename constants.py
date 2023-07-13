@@ -2,15 +2,15 @@
 
 
 service_status_map = {
-    "0": "prepared",
-    "1": "active",
-    "2": "ended",
-    "3": "suspended",
-    "4": "prepared blocked",
-    "5": "obsolete",
-    "6": "deferred",
-    "7": "quoted",
-    "8": "inactive",
+    0: "prepared",
+    1: "active",
+    2: "ended",
+    3: "suspended",
+    4: "prepared blocked",
+    5: "obsolete",
+    6: "deferred",
+    7: "quoted",
+    8: "inactive",
 }
 
 uisp_api_version = "v2.1"

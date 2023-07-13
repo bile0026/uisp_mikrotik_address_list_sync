@@ -18,22 +18,24 @@ def is_truthy(arg):
     return bool(strtobool(arg))
 
 
-def lookup_service_id(self, services, client_id):
+def lookup_service_id(services, client_id):
     for service in services:
         if service.get("clientId") == client_id:
             return service.get("id")
     return None
 
 
-def lookup_service_status(self, services, client_id):
+def lookup_service_status(services, client_id):
     for service in services:
         if service.get("clientId") == client_id:
             return service.get("status")
     return None
 
 
-def lookup_client_ip(self, devices, client_id):
-    for device in devices:
-        if device.get("clientId") == client_id:
-            return device.get("ip_address")
+def lookup_client_ip(devices, services, client_id):
+    for service in services:
+        if service.get("clientId") == client_id:
+            for device in devices:
+                if device["identification"]["site"].get("id") == service["unmsClientSiteId"]:
+                    return device.get("ipAddress").split('/')[0]
     return None

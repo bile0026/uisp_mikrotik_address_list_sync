@@ -18,8 +18,7 @@ class UISPMikroTikSyncConfig:
         mt_ip = mikrotik_config["router_ip"]
         mt_username = mikrotik_config["username"]
         mt_password = mikrotik_config["password"]
-        catch_all_queue = mikrotik_config["catch_all_queue"]
     except Exception as err:
         raise Exception(
-            f"Error loading config from uisp.ini, ensure this file exists. {err}"
+            f"Error loading config from uisp.ini, ensure this file exists and has the proper variables. {err}"
         )

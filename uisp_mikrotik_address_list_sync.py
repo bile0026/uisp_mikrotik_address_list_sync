@@ -43,7 +43,7 @@ def load_uisp_addresses():
 
     for client in clients:
         _client_id = client["id"]
-        _client_ip = lookup_client_ip(devices=devices, client_id=_client_id)
+        _client_ip = lookup_client_ip(devices=devices, services=services, client_id=_client_id)
         _client_name = f'{client["firstName"]} {client["lastName"]}'
         _service_id = lookup_service_id(services=services, client_id=_client_id)
         _service_status = lookup_service_status(services=services, client_id=_client_id)
@@ -53,10 +53,12 @@ def load_uisp_addresses():
             client_name=_client_name,
             client_id=_client_id,
             service_id=_service_id,
-            service_status=service_status_map[_service_status],
+            service_status=service_status_map.get(_service_status),
         )
 
         client_list.append(new_client)
+
+    return client_list
 
 
 def load_mikrotik_addresses():
@@ -68,7 +70,8 @@ def load_mikrotik_addresses():
 def sync_addresses():
     """Sync addresses from the UISP information to MikroTik address lists."""
 
-    pass
+    uisp_addresses = load_uisp_addresses()
+    print(f"UISP Addresses: {uisp_addresses}")
 
 
 if __name__ == "__main__":
