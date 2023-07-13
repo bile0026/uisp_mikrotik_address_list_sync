@@ -1,0 +1,10 @@
+[UISP]
+server_fqdn = example.uisp.com
+token = <uisp_token>
+
+[MIKROTIK]
+router_ip = 192.168.1.1
+use_ssl = False
+ssl_verify = False
+username = admin
+password = admin
