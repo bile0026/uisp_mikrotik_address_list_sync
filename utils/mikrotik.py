@@ -36,8 +36,20 @@ class MikroTikApi(ApiEndpoint):
             address_list = self.api_call(path=url)
         return address_list
 
+    def get_address_list_item_id(self, list_name, address):
+        """Delete an address from an address-list."""
+        url = f"ip/firewall/address-list?list={list_name}&address={address}"
+        address_item = self.api_call(path=url)
+
+        return address_item
+
     def add_address_to_list(self, ip_address, list_name, comment=""):
-        """add an ip address to an address-list."""
+        """Add an IP Address to an address-list."""
         url = f"ip/firewall/address-list/add"
         _data = {"list": list_name, "comment": comment, "address": ip_address}
-        self.api_call(path=url, payload=_data)
+        self.api_call(path=url, payload=_data, method="PUT")
+
+    def remove_address_from_list(self, entry_id):
+        """Remove an IP Address from an address-list."""
+        url = f'ip/firewall/address-list/{entry_id}'
+        self.api_call(path=url, method="DELETE")
