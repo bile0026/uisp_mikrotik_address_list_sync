@@ -6,5 +6,6 @@ token = <uisp_token>
 router_ip = 192.168.1.1
 use_ssl = False
 ssl_verify = False
+disable_ssl_warning = False
 username = admin
 password = admin

@@ -2,6 +2,10 @@
 
 from utils.base import ApiEndpoint
 import base64
+import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class MikroTikApi(ApiEndpoint):
@@ -45,11 +49,12 @@ class MikroTikApi(ApiEndpoint):
 
     def add_address_to_list(self, ip_address, list_name, comment=""):
         """Add an IP Address to an address-list."""
-        url = f"ip/firewall/address-list/add"
+        url = f"ip/firewall/address-list"
         _data = {"list": list_name, "comment": comment, "address": ip_address}
+        _data = json.dumps(_data)
         self.api_call(path=url, payload=_data, method="PUT")
 
     def remove_address_from_list(self, entry_id):
         """Remove an IP Address from an address-list."""
-        url = f'ip/firewall/address-list/{entry_id}'
-        self.api_call(path=url, method="DELETE")
+        url = f"ip/firewall/address-list/{entry_id}"
+        self.api_call(path=url, method="DELETE", accept_204=True)

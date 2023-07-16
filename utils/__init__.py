@@ -1,6 +1,9 @@
 """ Utility functions for working with UISP and MikroTik RouterOS """
 
 from distutils.util import strtobool
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def is_truthy(arg):
@@ -61,7 +64,11 @@ def find_missing_items(objects1, objects2):
     missing_items = []
 
     # Extract IP addresses from objects2
-    ip_addresses2 = {obj.ip_address for obj in objects2 if hasattr(obj, "ip_address") and getattr(obj, "ip_address") is not None}
+    ip_addresses2 = {
+        obj.ip_address
+        for obj in objects2
+        if hasattr(obj, "ip_address") and getattr(obj, "ip_address") is not None
+    }
 
     # Check objects1 against IP addresses in objects2
     for obj in objects1:

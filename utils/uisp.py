@@ -1,5 +1,8 @@
 """ Utility Methods for working with UISP Clients """
 from utils.base import ApiEndpoint
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class UISPApi(ApiEndpoint):

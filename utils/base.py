@@ -1,11 +1,20 @@
 """ Shared functions and classes """
 
+from __init__ import UISPMikroTikSyncConfig
 import requests
 import urllib3
 import json
 from os.path import exists
 from requests.auth import HTTPBasicAuth
 from utils import is_truthy
+import logging
+
+logger = logging.getLogger(__name__)
+
+module_config = UISPMikroTikSyncConfig
+
+if module_config.disable_ssl_warning:
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 class ApiEndpoint:
@@ -22,12 +31,14 @@ class ApiEndpoint:
         headers: dict = {},
         data: dict = {},
         ssl_verify: bool = True,
+        accept_204: bool = False,
     ):
         """Create API connection."""
         self.base_url = base_url
         self.verify = ssl_verify
-        self.headers = {"Accept": "*/*"}
+        self.headers = {"Accept": "*/*", "Content-Type": "application/json"}
         self.data = data
+        self.accept_204 = False
 
         if self.verify is False:
             urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -48,7 +59,12 @@ class ApiEndpoint:
         return full_path
 
     def api_call(
-        self, path: str, method: str = "GET", params: dict = {}, payload: dict = {}
+        self,
+        path: str,
+        method: str = "GET",
+        params: dict = {},
+        payload: dict = {},
+        accept_204: bool = False,
     ):  # pylint: disable=dangerous-default-value
         """Send Request to API endpoint of type `method`. Defaults to GET request.
         Args:
@@ -77,8 +93,17 @@ class ApiEndpoint:
             data=payload,
         )
         try:
-            print(f"API Response: {response}")
+            logger.debug(f"API Response: {response}")
             response.raise_for_status()
-            return response.json()
+            if response.status_code == 204 and not accept_204:
+                return None
+            elif response.text:  # Check if the response is not empty
+                return response.json()
+            else:
+                return None
         except requests.exceptions.HTTPError as err:
+            logger.error(f"Error communicating to the API: {err}")
             raise Exception(f"Error communicating to the API: {err}")
+        except json.JSONDecodeError as err:
+            logger.error(f"Error decoding API response as JSON: {err}")
+            raise Exception(f"Error decoding API response as JSON: {err}")

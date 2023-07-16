@@ -1,6 +1,9 @@
 """Classes for uisp_mikrotik_address_list_sync"""
 
 from . import ClientAddress
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class MikroTikClientAddress(ClientAddress):

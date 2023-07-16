@@ -15,6 +15,7 @@ class UISPMikroTikSyncConfig:
         uisp_api_token = uisp_config["token"]
         uisp_fqdn = uisp_config["server_fqdn"]
         ssl_verify = mikrotik_config["ssl_verify"]
+        disable_ssl_warning = mikrotik_config["disable_ssl_warning"]
         mt_ip = mikrotik_config["router_ip"]
         mt_username = mikrotik_config["username"]
         mt_password = mikrotik_config["password"]

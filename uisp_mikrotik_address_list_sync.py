@@ -1,5 +1,9 @@
 import ipaddress
+import logging
 import netmiko
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 from __init__ import UISPMikroTikSyncConfig
 from classes.uisp import UISPClientAddress
@@ -182,14 +186,14 @@ def sync_addresses():
     """Sync addresses from the UISP information to MikroTik address lists."""
 
     uisp_addresses = load_uisp_addresses()
-    print(f"\n\nUISP Addresses: {uisp_addresses}")
+    logger.debug(f"\n\nUISP Addresses: {uisp_addresses}")
 
     (
         mikrotik_all_addresses,
         mikrotik_active_addresses,
         mikrotik_suspended_addresses,
     ) = load_mikrotik_addresses()
-    print(
+    logger.debug(
         f"\n\nMikroTik Active Addresses: {mikrotik_active_addresses}\nMikrotik Suspended Addresses: {mikrotik_suspended_addresses}\nMikrotik All Addresses: {mikrotik_all_addresses}"
     )
 
@@ -201,7 +205,7 @@ def sync_addresses():
         uisp_ips=uisp_addresses,
         mikrotik_ips=mikrotik_suspended_addresses,
     )
-    print(
+    logger.debug(
         f"\n\nSuspended missing from UISP: {addresses_suspended_missing_uisp}\nSuspended missing from MikroTik: {addresses_suspended_missing_mikrotik}"
     )
 
@@ -213,7 +217,7 @@ def sync_addresses():
         uisp_ips=uisp_addresses,
         mikrotik_ips=mikrotik_active_addresses,
     )
-    print(
+    logger.debug(
         f"\n\nActive missing from UISP: {addresses_active_missing_uisp}\Active missing from MikroTik: {addresses_active_missing_mikrotik}"
     )
 
@@ -224,15 +228,81 @@ def sync_addresses():
         uisp_ips=uisp_addresses,
         mikrotik_ips=mikrotik_all_addresses,
     )
-    print(
+    logger.debug(
         f"\n\nAll missing from UISP: {addresses_all_missing_uisp}\All missing from MikroTik: {addresses_all_missing_mikrotik}"
     )
 
+    # Remove suspended client IPs that are no longer suspended in UISP from MikroTik Router
+    logger.info(
+        f"Remove suspended client IPs that are no longer suspended in UISP from MikroTik Router"
+    )
     for item in addresses_suspended_missing_uisp:
-        _entry_id = mikrotik_api.get_address_list_item_id(list_name=getattr(item, "list_name"), address=getattr(item, "ip_address"))[0][".id"]
+        _entry_id = mikrotik_api.get_address_list_item_id(
+            list_name=item["list_name"], address=item["ip_address"]
+        )[0][".id"]
 
-        print(f'Removing {getattr(item, "ip_address")} from {getattr(item, "list_name")}')
+        logger.info(f'Removing {item["ip_address"]} from {item["list_name"]}')
         mikrotik_api.remove_address_from_list(entry_id=_entry_id)
+
+    # Add suspended client IPs to the MikroTik Router which are suspended in UISP.
+    logger.info(
+        f"Add suspended client IPs to the MikroTik Router which are suspended in UISP."
+    )
+    for item in addresses_suspended_missing_mikrotik:
+        _comment = f'{item["client_name"]} - {item["client_id"]}_{item["service_id"]}'
+        logger.info(f'Adding {item["ip_address"]} to {suspended_list_name}')
+        mikrotik_api.add_address_to_list(
+            ip_address=item["ip_address"],
+            list_name=suspended_list_name,
+            comment=_comment,
+        )
+
+    # Remove active client IPs that are no longer active in UISP from MikroTik Router.
+    logger.info(
+        f"Remove active client IPs that are no longer active in UISP from MikroTik Router."
+    )
+    for item in addresses_active_missing_uisp:
+        _entry_id = mikrotik_api.get_address_list_item_id(
+            list_name=item["list_name"], address=item["ip_address"]
+        )[0][".id"]
+
+        logger.info(f'Removing {item["ip_address"]} from {item["list_name"]}')
+        mikrotik_api.remove_address_from_list(entry_id=_entry_id)
+
+    # Add active client IPs to the MikroTik Router which are active in UISP.
+    logger.info(
+        f"Add active client IPs to the MikroTik Router which are active in UISP."
+    )
+    for item in addresses_active_missing_mikrotik:
+        _comment = f'{item["client_name"]} - {item["client_id"]}_{item["service_id"]}'
+        logger.info(f'Adding {item["ip_address"]} to {suspended_list_name}')
+        mikrotik_api.add_address_to_list(
+            ip_address=item["ip_address"], list_name=active_list_name, comment=_comment
+        )
+
+    # Remove all client IPs that are no longer in UISP from MikroTik Router.
+    logger.info(
+        f"Remove all client IPs that are no longer in UISP from MikroTik Router."
+    )
+    for item in addresses_all_missing_uisp:
+        _entry_id = mikrotik_api.get_address_list_item_id(
+            list_name=item["list_name"], address=item["ip_address"]
+        )[0][".id"]
+
+        logger.info(f'Removing {item["ip_address"]} from {item["list_name"]}')
+        mikrotik_api.remove_address_from_list(entry_id=_entry_id)
+
+    # Add all client IPs to the MikroTik Router which are in UISP.
+    logger.info(f"Add all client IPs to the MikroTik Router which are in UISP.")
+    for item in addresses_all_missing_mikrotik:
+        _comment = f'{item["client_name"]} - {item["client_id"]}_{item["service_id"]}'
+        logger.info(f'Adding {item["ip_address"]} to {all_list_name}')
+        mikrotik_api.add_address_to_list(
+            ip_address=item["ip_address"], list_name=all_list_name, comment=_comment
+        )
+
+    logger.info(f"All Addresses should now be syncronized.")
+
 
 if __name__ == "__main__":
     sync_addresses()
