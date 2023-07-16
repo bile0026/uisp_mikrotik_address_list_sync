@@ -47,4 +47,4 @@ password = admin
 
 ## Contributions
 
-Contributions welcome, just create a PR or issue.
+Contributions welcome, just create a PR to develop or create an issue.
