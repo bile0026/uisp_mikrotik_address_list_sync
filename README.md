@@ -71,6 +71,8 @@ set www-ssl address="" certificate=routeros-test disabled=no port=443 tls-versio
 
 [] Validation of ip_address objects by making them `ip_address` objects from the `ipaddress` package.
 
+[] Add some kind of email/chat notification if script execution fails for some reason.
+
 ## Contributions
 
 Contributions welcome, just create a PR to develop or create an issue.
