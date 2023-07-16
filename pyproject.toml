@@ -8,7 +8,6 @@ packages = [{include = "uisp_mikrotik_address_list_sync"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-netmiko = "^4.2.0"
 ipaddress = "^1.0.23"
 urllib3 = "^2.0.3"
 requests = "^2.31.0"

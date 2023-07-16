@@ -1,6 +1,5 @@
 import ipaddress
 import logging
-import netmiko
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
