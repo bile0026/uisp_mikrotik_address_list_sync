@@ -39,3 +39,12 @@ disable_ssl_warning = False
 username = admin
 password = admin
 ```
+
+## To-Do
+
+[] Bulk API requests for MikroTik Create and Delete.
+[] Validation of ip_address objects by making them `ip_address` objects from the `ipaddress` package.
+
+## Contributions
+
+Contributions welcome, just create a PR or issue.
