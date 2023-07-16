@@ -21,6 +21,12 @@ def is_truthy(arg):
     return bool(strtobool(arg))
 
 
+def str_to_bool(value):
+    """Converts a string value to boolean."""
+    return value.lower() in ["true", "yes", "1"]
+
+
+
 def lookup_service_id(services, client_id):
     """Lookup a service Id based on a client Id. Returns the service Id if found, otherwise None."""
     for service in services:
