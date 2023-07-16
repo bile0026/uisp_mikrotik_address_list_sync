@@ -8,6 +8,8 @@ It is simplest for permissions to do all this in your user directory, but keep i
 
 You can set this to run on a schedule with cron.
 
+Always deploy from main branch, this should be considered stable. All other branches are not considered stable.
+
 ## Getting started
 
 It is strongly advised to run this project in a python virtual environment to prevent conflicts. This project uses poetry to manage the dependencies and environment. If you don't want to run this without using poetry you can run `poetry export --output requirements.txt --without-hashes` to dump the python packages to a `requirements.txt` file, then create a virtual environment with `python -m venv .venv`. Run `source bin/activate` to activate the virtual environment. Then to install the dependencies run `pip install -r requirements.txt`.
