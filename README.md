@@ -2,7 +2,7 @@
 
 This job will take client IP addresses/Prefixes from UISP as assigned and sync them to MikroTik address lists for active and suspended services. These lists can then be used to do things like suspend services or block access based on service status.
 
-This job utilizes the MikroTik RouterOS Rest API, so port 80/443 need to be allowed on the MikroTik from the source IP of the machine running this package. You will also need to enable `www` and `www-ssl` in `ip/services` in your MikroTik. It is strongly suggested to implement the `available from` field or `ip/firewall/filter` rules to restrict access. *DO NOT KEEP THIS OPEN TO THE INTERNET*
+This job utilizes the MikroTik RouterOS Rest API, so port 80/443 need to be allowed on the MikroTik from the source IP of the machine running this package. You will also need to enable `www` and `www-ssl` in `ip/services` in your MikroTik. It is strongly suggested to implement the `available from` field or `ip/firewall/filter` rules to restrict access. *DO NOT KEEP THIS OPEN TO THE INTERNET* You will also need to install a public certificate or generate a self-signed certificate for the REST API. See "MikroTik Configuration" section for more information.
 
 It is simplest for permissions to do all this in your user directory, but keep in mind permissions and follow best practices for securing the .ini data since there will be sensitive credentials stored in it.
 
@@ -42,7 +42,7 @@ Run `crontab -e` to open the cron file. You can use a tool like [Cron Expression
 */15 * * * * /bin/sh /home/<user>/uisp_mikrotik_address_list_sync/run_sync.sh
 ```
 
-## Configuration
+## Job Configuration
 
 Copy the `uisp.ini.example` file to `uisp.ini`, and modify the values as necessary:
 
@@ -58,6 +58,22 @@ ssl_verify = False
 disable_ssl_warning = False
 username = admin
 password = admin
+```
+
+## MikroTik Configuration
+
+You will need to at least create a self-signed certificate for your router in order for the REST API to function. Adjust values per your environment.
+
+```routeros
+/certificate/add key-size=2048 trusted=yes organization=example-co days-valid=1000 name=ca-template common-name=routeros-test
+/certificate/sign ca-template
+/certificate add name=routeros-test common-name=hra-main-core subject-alt-name=IP:192.168.1.1 key-size=2048 days-valid=1000
+/certificate/sign routeros-test ca=ca-template
+
+/ip service
+set www address="" disabled=no port=80 vrf=main
+set www-ssl address="" certificate=routeros-test disabled=no port=443 tls-version=\
+    any vrf=main
 ```
 
 ## Notes
