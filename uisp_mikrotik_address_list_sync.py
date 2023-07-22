@@ -3,6 +3,8 @@ import ipaddress
 import logging
 import os
 
+from utils import send_healthcheck_ping
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -329,3 +331,7 @@ def sync_addresses():
 
 if __name__ == "__main__":
     sync_addresses()
+
+    if module_config.send_health_check:
+        url = f"https://hc-ping.com/{module_config.health_check_id}"
+        send_healthcheck_ping(check_url=url)

@@ -2,6 +2,7 @@
 
 from distutils.util import strtobool
 import logging
+import requests
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +26,14 @@ def str_to_bool(value):
     """Converts a string value to boolean."""
     return value.lower() in ["true", "yes", "1"]
 
+
+def send_healthcheck_ping(check_url):
+    try:
+        response = requests.get(check_url)
+        response.raise_for_status()  # Raise an exception for 4xx and 5xx status codes
+        logger.info(f"Ping sent successfully!")
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Error sending ping: {e}")
 
 
 def lookup_service_id(services, client_id):
