@@ -31,6 +31,10 @@ To setup the job to run on a schedule run `crontab -e` to open the cron file. Yo
 Copy the `uisp.ini.example` file to `uisp.ini`, and modify the values as necessary:
 
 ```config
+[ADMIN]
+send_health_check = False
+healthcheck_io_id = 12345
+
 [UISP]
 server_fqdn = example.uisp.com
 token = <uisp_token>
@@ -60,6 +64,10 @@ set www-ssl address="" certificate=routeros-test disabled=no port=443 tls-versio
     any vrf=main
 ```
 
+## Healthchecks
+
+Can send healthchecks to [healthcheck.io](https://healthcheck.io) if you set the `send_health_check = True` and include the "guid" portion of the healthcheck in `health_check_id`.
+
 ## Notes
 
 * Tested on python 3.8, 3.10
@@ -71,7 +79,7 @@ set www-ssl address="" certificate=routeros-test disabled=no port=443 tls-versio
 
 [] Validation of ip_address objects by making them `ip_address` objects from the `ipaddress` package.
 
-[] Add some kind of email/chat notification if script execution fails for some reason.
+[X] Add some kind of email/chat notification if script execution fails for some reason.
 
 ## Contributions
 
