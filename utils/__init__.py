@@ -3,6 +3,7 @@
 from distutils.util import strtobool
 import logging
 import requests
+import random
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +62,12 @@ def lookup_client_ip(devices, services, client_id):
                     device["identification"]["site"].get("id")
                     == service["unmsClientSiteId"]
                 ):
-                    return device.get("ipAddress").split("/")[0]
+                    if device.get("ipAddress"):
+                        return device.get("ipAddress").split("/")[0]
+                    else:
+                        # TODO: Better handling of devices without an IP.
+                        _num = random.randint(2, 254)
+                        return f"192.0.0.{_num}"
     return None
 
 
