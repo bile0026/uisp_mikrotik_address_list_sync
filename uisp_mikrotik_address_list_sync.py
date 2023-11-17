@@ -12,18 +12,18 @@ logger = logging.getLogger(__name__)
 # Create a file handler and set its properties
 now = datetime.datetime.now()
 month = now.strftime("%m-%y")  # Full month name
-day = now.strftime("%d")    # Day of the month
+day = now.strftime("%d")  # Day of the month
 date = now.strftime("%d-%m-%yT%H:%M:%S%Z")  # Year-Month-Day format
 
 # Create the logs directory if it doesn't exist
 logs_directory = f"./logs/{month}/{day}"
 os.makedirs(logs_directory, exist_ok=True)
 
-file_handler = logging.FileHandler('./logs/{}/{}/sync_{}.log'.format(month, day, date))
+file_handler = logging.FileHandler("./logs/{}/{}/sync_{}.log".format(month, day, date))
 file_handler.setLevel(logging.DEBUG)
 
 # Create a formatter and set its format
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
 file_handler.setFormatter(formatter)
 
 # Add the file handler to the logger

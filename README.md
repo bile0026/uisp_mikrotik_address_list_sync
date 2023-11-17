@@ -79,6 +79,8 @@ Can send healthchecks to [healthcheck.io](https://healthcheck.io) if you set the
 
 [] Validation of ip_address objects by making them `ip_address` objects from the `ipaddress` package.
 
+[] Better error handling when a device doesn't have an IP address assigned in UISP.
+
 [X] Add some kind of email/chat notification if script execution fails for some reason.
 
 ## Contributions
