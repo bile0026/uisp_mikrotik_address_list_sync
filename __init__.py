@@ -23,6 +23,7 @@ class UISPMikroTikSyncConfig:
         uisp_api_token = uisp_config.get("token")
         uisp_fqdn = uisp_config.get("server_fqdn")
         ssl_verify = str_to_bool(mikrotik_config.get("ssl_verify"))
+        use_ssl = str_to_bool(mikrotik_config.get("use_ssl"))
         disable_ssl_warning = str_to_bool(mikrotik_config.get("disable_ssl_warning"))
         mt_ip = mikrotik_config.get("router_ip")
         mt_username = mikrotik_config.get("username")

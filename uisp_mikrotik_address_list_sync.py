@@ -76,6 +76,7 @@ mikrotik_api = MikroTikApi(
     username=module_config.mt_username,
     password=module_config.mt_password,
     ssl_verify=module_config.ssl_verify,
+    use_ssl=module_config.use_ssl,
 )
 
 
