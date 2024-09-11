@@ -15,10 +15,13 @@ class UISPApi(ApiEndpoint):
         token: str,
         params: dict = {},
         verify: bool = True,
+        use_ssl: bool = True,
     ):
         """Create UISP API connection."""
         super().__init__(base_url=base_url)
-        self.base_url = "https://" + base_url + "/nms/" + "api/" + api_version + "/"
+        self.base_url = "http://" + base_url + "/nms/" + "api/" + api_version + "/"
+        if not use_ssl:
+            self.base_url = "https://" + base_url + "/nms/" + "api/" + api_version + "/"
         self.api_version = api_version
         self.verify = verify
         self.params = params
@@ -48,10 +51,13 @@ class UCRMApi(ApiEndpoint):
         token: str,
         params: dict = {},
         verify: bool = True,
+        use_ssl: bool = True,
     ):
         """Create UISP API connection."""
         super().__init__(base_url=base_url)
         self.base_url = "https://" + base_url + "/crm/" + "api/" + api_version + "/"
+        if not use_ssl:
+            self.base_url = "http://" + base_url + "/crm/" + "api/" + api_version + "/"
         self.api_version = api_version
         self.headers = {"x-auth-app-key": token, "Content-Type": "application/json"}
         self.params = params

@@ -18,10 +18,13 @@ class MikroTikApi(ApiEndpoint):
         password: str,
         params: dict = {},
         ssl_verify: bool = True,
+        use_ssl: bool = True,
     ):
         """Create MikroTik API connection."""
         super().__init__(base_url=base_url)
         self.base_url = f"https://{base_url}/rest/"
+        if not use_ssl:
+            self.base_url = f"http://{base_url}/rest/"
         self.verify = ssl_verify
         self.username = username
         self.password = password

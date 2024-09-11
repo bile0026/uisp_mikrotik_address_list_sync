@@ -38,6 +38,7 @@ healthcheck_io_id = 12345
 [UISP]
 server_fqdn = example.uisp.com
 token = <uisp_token>
+use_ssl = True
 
 [MIKROTIK]
 router_ip = 192.168.1.1
