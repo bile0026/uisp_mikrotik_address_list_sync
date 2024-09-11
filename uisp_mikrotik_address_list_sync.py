@@ -63,12 +63,14 @@ uisp_api = UISPApi(
     token=module_config.uisp_api_token,
     api_version=uisp_api_version,
     verify=True,
+    use_ssl=module_config.uisp_use_ssl,
 )
 ucrm_api = UCRMApi(
     base_url=module_config.uisp_fqdn,
     token=module_config.uisp_api_token,
     api_version=ucrm_api_version,
     verify=True,
+    use_ssl=module_config.uisp_use_ssl,
 )
 
 mikrotik_api = MikroTikApi(
@@ -76,7 +78,7 @@ mikrotik_api = MikroTikApi(
     username=module_config.mt_username,
     password=module_config.mt_password,
     ssl_verify=module_config.ssl_verify,
-    use_ssl=module_config.use_ssl,
+    use_ssl=module_config.mt_use_ssl,
 )
 
 
