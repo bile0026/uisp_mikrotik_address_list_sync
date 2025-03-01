@@ -58,13 +58,18 @@ def lookup_client_ip(devices, services, client_id):
     for service in services:
         if service.get("clientId") == client_id:
             for device in devices:
-                if (
-                    device["identification"]["site"].get("id")
-                    == service["unmsClientSiteId"]
-                ):
+                # Log warning if device is missing identification or site data
+                if not device.get("identification") or not device["identification"].get("site"):
+                    device_name = device.get("identification", {}).get("name", "Unknown device")
+                    logger.warning(f"Device '{device_name}' (client ID: {client_id}) has no site assignment")
+                    continue
+
+                if device["identification"]["site"].get("id") == service["unmsClientSiteId"]:
                     if device.get("ipAddress"):
                         return device.get("ipAddress").split("/")[0]
                     else:
+                        device_name = device["identification"].get("name", "Unknown device")
+                        logger.warning(f"Device '{device_name}' (client ID: {client_id}) has no IP address, using fallback")
                         # TODO: Better handling of devices without an IP.
                         _num = random.randint(2, 254)
                         return f"192.0.0.{_num}"
