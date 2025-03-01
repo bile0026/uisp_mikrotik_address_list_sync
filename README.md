@@ -12,7 +12,17 @@ Always deploy from main branch, this should be considered stable. All other bran
 
 ## Getting started
 
-It is strongly advised to run this project in a python virtual environment to prevent conflicts. This project uses poetry to manage the dependencies and environment. If you don't want to run this without using poetry you can run `poetry export --output requirements.txt --without-hashes` to dump the python packages to a `requirements.txt` file, then create a virtual environment with `python -m venv .venv`. Run `source .venv/bin/activate` to activate the virtual environment. Then to install the dependencies run `pip install -r requirements.txt`.
+It is strongly advised to run this project in a python virtual environment to prevent conflicts. This project uses poetry to manage the dependencies and environment. 
+
+## Run with Docker
+
+Copy `uisp.ini.example` to `uisp.ini` and update the values as in the Job Configuration section. If you need to override any docker-compose values create a `docker-compose.override.yaml` and include the keys you want to override. Doing this will allow you to more easily pull changes from git without losing your customizations. 
+
+Once your configuration is ready run `docker compose up -d --build` to start the project. The `interval` parameter in the .ini file will run the job each number of minutes specified.
+
+## Run without Docker
+
+If you don't want to run this without using poetry you can run `poetry export --output requirements.txt --without-hashes` to dump the python packages to a `requirements.txt` file, then create a virtual environment with `python -m venv .venv`. Run `source .venv/bin/activate` to activate the virtual environment. Then to install the dependencies run `pip install -r requirements.txt`.
 
 After the virtual environment is created and dependencies installed. Take note of the path of the python executable in the virtual environment. You'll need this to setup the cron job.
 
@@ -34,6 +44,7 @@ Copy the `uisp.ini.example` file to `uisp.ini`, and modify the values as necessa
 [ADMIN]
 send_health_check = False
 healthcheck_io_id = 12345
+interval = 15
 
 [UISP]
 server_fqdn = example.uisp.com

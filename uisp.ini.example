@@ -1,6 +1,7 @@
 [ADMIN]
 send_health_check = False
 health_check_id = 12345
+interval = 15
 
 [UISP]
 server_fqdn = example.uisp.com
