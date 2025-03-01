@@ -12,6 +12,7 @@ ipaddress = "^1.0.23"
 urllib3 = "^2.0.3"
 requests = "^2.31.0"
 configparser = "^6.0.0"
+schedule = "^1.2.2"
 
 
 [tool.poetry.group.dev.dependencies]

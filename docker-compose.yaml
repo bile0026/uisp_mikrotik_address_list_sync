@@ -1,0 +1,14 @@
+---
+services:
+  uisp_mikrotik_address_list_sync:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: uisp_mikrotik_address_list_sync
+    restart: unless-stopped
+    volumes:
+      - ./uisp.ini:/app/uisp.ini  # Bind-mount your config file
+      - ./logs:/app/logs
+    environment:
+      POETRY_VIRTUALENVS_CREATE: "false"  # Set Poetry environment variables if necessary
+      TZ: "America/Chicago"
