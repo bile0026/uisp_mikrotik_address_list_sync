@@ -18,6 +18,9 @@ schedule = "^1.2.2"
 [tool.poetry.group.dev.dependencies]
 black = "^23.7.0"
 flake8 = "^6.0.0"
+pytest = "^7.4.0"
+pytest-mock = "^3.11.1"
+pytest-cov = "^4.1.0"
 
 [build-system]
 requires = ["poetry-core"]

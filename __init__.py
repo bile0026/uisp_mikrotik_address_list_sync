@@ -1,6 +1,4 @@
 """Module declaration for uisp_mikrotik_address_list_sync."""
-from utils import str_to_bool
-from configparser import ConfigParser
 import logging
 
 logger = logging.getLogger(__name__)
@@ -10,6 +8,9 @@ class UISPMikroTikSyncConfig:
     """configuration for uisp-mikrotik-sync module"""
 
     try:
+        from configparser import ConfigParser
+        from utils import str_to_bool
+        
         parser = ConfigParser(interpolation=None)
         parser.read("uisp.ini")
 

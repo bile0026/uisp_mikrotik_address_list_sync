@@ -95,6 +95,23 @@ Can send healthchecks to [healthcheck.io](https://healthcheck.io) if you set the
 
 [X] Add some kind of email/chat notification if script execution fails for some reason.
 
+## Testing
+Testing the app can be done with a few different commands. Passing tests are required before merging to main. 
+
+```shell
+# Run all tests
+poetry run pytest tests/ -v --import-mode=importlib
+
+# Run with coverage
+poetry run pytest tests/ --cov=. --cov-report=term --import-mode=importlib
+
+# Use the test runner
+python run_tests.py --verbose
+
+# Run specific test files
+poetry run pytest tests/test_uisp_api.py -v --import-mode=importlib
+```
+
 ## Contributions
 
 Contributions welcome, just create a PR to develop or create an issue.
