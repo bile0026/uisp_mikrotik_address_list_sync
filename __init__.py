@@ -1,6 +1,4 @@
 """Module declaration for uisp_mikrotik_address_list_sync."""
-from utils import str_to_bool
-from configparser import ConfigParser
 import logging
 
 logger = logging.getLogger(__name__)
@@ -10,6 +8,9 @@ class UISPMikroTikSyncConfig:
     """configuration for uisp-mikrotik-sync module"""
 
     try:
+        from configparser import ConfigParser
+        from utils import str_to_bool
+        
         parser = ConfigParser(interpolation=None)
         parser.read("uisp.ini")
 
@@ -20,9 +21,10 @@ class UISPMikroTikSyncConfig:
         send_health_check = str_to_bool(admin_config.get("send_health_check"))
         if send_health_check:
             health_check_id = admin_config.get("health_check_id")
-        uisp_api_token = uisp_config.get("token")
+        uisp_nms_token = uisp_config.get("nms_token")
+        uisp_crm_token = uisp_config.get("crm_token")
         uisp_fqdn = uisp_config.get("server_fqdn")
-        uisp_use_ssl = uisp_config.get("use_ssl")
+        uisp_use_ssl = str_to_bool(uisp_config.get("use_ssl", "True"))
         ssl_verify = str_to_bool(mikrotik_config.get("ssl_verify"))
         mt_use_ssl = str_to_bool(mikrotik_config.get("use_ssl"))
         disable_ssl_warning = str_to_bool(mikrotik_config.get("disable_ssl_warning"))
