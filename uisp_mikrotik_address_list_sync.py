@@ -60,14 +60,14 @@ all_address_list = [MikroTikClientAddress]
 
 uisp_api = UISPApi(
     base_url=module_config.uisp_fqdn,
-    token=module_config.uisp_api_token,
+    token=module_config.uisp_nms_token,
     api_version=uisp_api_version,
     verify=True,
     use_ssl=module_config.uisp_use_ssl,
 )
 ucrm_api = UCRMApi(
     base_url=module_config.uisp_fqdn,
-    token=module_config.uisp_api_token,
+    token=module_config.uisp_crm_token,
     api_version=ucrm_api_version,
     verify=True,
     use_ssl=module_config.uisp_use_ssl,
