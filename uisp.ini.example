@@ -5,7 +5,8 @@ interval = 15
 
 [UISP]
 server_fqdn = example.uisp.com
-token = <uisp_token>
+nms_token = <uisp_nms_token>
+crm_token = <uisp_crm_token>
 use_ssl = True
 
 [MIKROTIK]
