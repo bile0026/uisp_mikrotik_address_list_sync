@@ -260,73 +260,100 @@ def sync_addresses():
         f"\n\nAll missing from UISP: {addresses_all_missing_uisp}\All missing from MikroTik: {addresses_all_missing_mikrotik}"
     )
 
-    # Remove suspended client IPs that are no longer suspended in UISP from MikroTik Router
-    logger.info(
-        f"Remove suspended client IPs that are no longer suspended in UISP from MikroTik Router"
-    )
+    # Prepare bulk operations for suspended addresses
+    logger.info("Preparing bulk operations for suspended addresses")
+    
+    # Prepare addresses to remove (no longer suspended in UISP)
+    suspended_addresses_to_remove_raw = []
     for item in addresses_suspended_missing_uisp:
-        _entry_id = mikrotik_api.get_address_list_item_id(
-            list_name=item["list_name"], address=item["ip_address"]
-        )[0][".id"]
-
-        logger.info(f'Removing {item["ip_address"]} from {item["list_name"]}')
-        mikrotik_api.remove_address_from_list(entry_id=_entry_id)
-
-    # Add suspended client IPs to the MikroTik Router which are suspended in UISP.
-    logger.info(
-        f"Add suspended client IPs to the MikroTik Router which are suspended in UISP."
-    )
+        suspended_addresses_to_remove_raw.append({
+            "ip_address": item["ip_address"],
+            "list_name": item["list_name"]
+        })
+    
+    # Get entry IDs in bulk
+    suspended_addresses_to_remove = mikrotik_api.get_entry_ids_bulk(suspended_addresses_to_remove_raw)
+    
+    # Prepare addresses to add (newly suspended in UISP)
+    suspended_addresses_to_add = []
     for item in addresses_suspended_missing_mikrotik:
         _comment = f'{item["client_name"]} - {item["client_id"]}_{item["service_id"]}'
-        logger.info(f'Adding {item["ip_address"]} to {suspended_list_name}')
-        mikrotik_api.add_address_to_list(
-            ip_address=item["ip_address"],
+        suspended_addresses_to_add.append({
+            "ip_address": item["ip_address"],
+            "list_name": suspended_list_name,
+            "comment": _comment
+        })
+    
+    # Perform bulk sync for suspended addresses
+    if suspended_addresses_to_remove or suspended_addresses_to_add:
+        mikrotik_api.bulk_sync_address_list(
             list_name=suspended_list_name,
-            comment=_comment,
+            addresses_to_add=suspended_addresses_to_add,
+            addresses_to_remove=suspended_addresses_to_remove
         )
-
-    # Remove active client IPs that are no longer active in UISP from MikroTik Router.
-    logger.info(
-        f"Remove active client IPs that are no longer active in UISP from MikroTik Router."
-    )
+    
+    # Prepare bulk operations for active addresses
+    logger.info("Preparing bulk operations for active addresses")
+    
+    # Prepare addresses to remove (no longer active in UISP)
+    active_addresses_to_remove_raw = []
     for item in addresses_active_missing_uisp:
-        _entry_id = mikrotik_api.get_address_list_item_id(
-            list_name=item["list_name"], address=item["ip_address"]
-        )[0][".id"]
-
-        logger.info(f'Removing {item["ip_address"]} from {item["list_name"]}')
-        mikrotik_api.remove_address_from_list(entry_id=_entry_id)
-
-    # Add active client IPs to the MikroTik Router which are active in UISP.
-    logger.info(
-        f"Add active client IPs to the MikroTik Router which are active in UISP."
-    )
+        active_addresses_to_remove_raw.append({
+            "ip_address": item["ip_address"],
+            "list_name": item["list_name"]
+        })
+    
+    # Get entry IDs in bulk
+    active_addresses_to_remove = mikrotik_api.get_entry_ids_bulk(active_addresses_to_remove_raw)
+    
+    # Prepare addresses to add (newly active in UISP)
+    active_addresses_to_add = []
     for item in addresses_active_missing_mikrotik:
         _comment = f'{item["client_name"]} - {item["client_id"]}_{item["service_id"]}'
-        logger.info(f'Adding {item["ip_address"]} to {suspended_list_name}')
-        mikrotik_api.add_address_to_list(
-            ip_address=item["ip_address"], list_name=active_list_name, comment=_comment
+        active_addresses_to_add.append({
+            "ip_address": item["ip_address"],
+            "list_name": active_list_name,
+            "comment": _comment
+        })
+    
+    # Perform bulk sync for active addresses
+    if active_addresses_to_remove or active_addresses_to_add:
+        mikrotik_api.bulk_sync_address_list(
+            list_name=active_list_name,
+            addresses_to_add=active_addresses_to_add,
+            addresses_to_remove=active_addresses_to_remove
         )
-
-    # Remove all client IPs that are no longer in UISP from MikroTik Router.
-    logger.info(
-        f"Remove all client IPs that are no longer in UISP from MikroTik Router."
-    )
+    
+    # Prepare bulk operations for all addresses
+    logger.info("Preparing bulk operations for all addresses")
+    
+    # Prepare addresses to remove (no longer in UISP)
+    all_addresses_to_remove_raw = []
     for item in addresses_all_missing_uisp:
-        _entry_id = mikrotik_api.get_address_list_item_id(
-            list_name=item["list_name"], address=item["ip_address"]
-        )[0][".id"]
-
-        logger.info(f'Removing {item["ip_address"]} from {item["list_name"]}')
-        mikrotik_api.remove_address_from_list(entry_id=_entry_id)
-
-    # Add all client IPs to the MikroTik Router which are in UISP.
-    logger.info(f"Add all client IPs to the MikroTik Router which are in UISP.")
+        all_addresses_to_remove_raw.append({
+            "ip_address": item["ip_address"],
+            "list_name": item["list_name"]
+        })
+    
+    # Get entry IDs in bulk
+    all_addresses_to_remove = mikrotik_api.get_entry_ids_bulk(all_addresses_to_remove_raw)
+    
+    # Prepare addresses to add (newly in UISP)
+    all_addresses_to_add = []
     for item in addresses_all_missing_mikrotik:
         _comment = f'{item["client_name"]} - {item["client_id"]}_{item["service_id"]}'
-        logger.info(f'Adding {item["ip_address"]} to {all_list_name}')
-        mikrotik_api.add_address_to_list(
-            ip_address=item["ip_address"], list_name=all_list_name, comment=_comment
+        all_addresses_to_add.append({
+            "ip_address": item["ip_address"],
+            "list_name": all_list_name,
+            "comment": _comment
+        })
+    
+    # Perform bulk sync for all addresses
+    if all_addresses_to_remove or all_addresses_to_add:
+        mikrotik_api.bulk_sync_address_list(
+            list_name=all_list_name,
+            addresses_to_add=all_addresses_to_add,
+            addresses_to_remove=all_addresses_to_remove
         )
 
     logger.info(f"All Addresses should now be syncronized.")
