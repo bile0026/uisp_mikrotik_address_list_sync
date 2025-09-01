@@ -168,3 +168,244 @@ class TestMikroTikApi:
         )
         
         assert api.verify is False
+
+    def test_bulk_add_addresses_to_list(self, mock_api_response):
+        """Test bulk_add_addresses_to_list method."""
+        mock_api_response.status_code = 200
+        
+        with patch('requests.Session') as mock_session_class:
+            mock_session = Mock()
+            mock_session.put.return_value = mock_api_response
+            mock_session_class.return_value = mock_session
+            
+            api = MikroTikApi(
+                base_url="192.168.1.1",
+                username="admin",
+                password="password"
+            )
+            
+            addresses_data = [
+                {
+                    "ip_address": "192.168.1.10",
+                    "list_name": "clients_active",
+                    "comment": "John Doe"
+                },
+                {
+                    "ip_address": "192.168.1.20",
+                    "list_name": "clients_active",
+                    "comment": "Jane Smith"
+                }
+            ]
+            
+            # Should not raise an exception
+            api.bulk_add_addresses_to_list(addresses_data)
+
+    def test_bulk_add_addresses_to_list_empty(self):
+        """Test bulk_add_addresses_to_list with empty data."""
+        api = MikroTikApi(
+            base_url="192.168.1.1",
+            username="admin",
+            password="password"
+        )
+        
+        # Should handle empty list gracefully
+        api.bulk_add_addresses_to_list([])
+
+    def test_bulk_remove_addresses_from_list(self, mock_api_response):
+        """Test bulk_remove_addresses_from_list method."""
+        mock_api_response.status_code = 200
+        
+        with patch('requests.Session') as mock_session_class:
+            mock_session = Mock()
+            mock_session.delete.return_value = mock_api_response
+            mock_session_class.return_value = mock_session
+            
+            api = MikroTikApi(
+                base_url="192.168.1.1",
+                username="admin",
+                password="password"
+            )
+            
+            addresses_data = [
+                {
+                    "entry_id": "1",
+                    "ip_address": "192.168.1.10",
+                    "list_name": "clients_active"
+                },
+                {
+                    "entry_id": "2",
+                    "ip_address": "192.168.1.20",
+                    "list_name": "clients_active"
+                }
+            ]
+            
+            # Should not raise an exception
+            api.bulk_remove_addresses_from_list(addresses_data)
+
+    def test_bulk_remove_addresses_from_list_empty(self):
+        """Test bulk_remove_addresses_from_list with empty data."""
+        api = MikroTikApi(
+            base_url="192.168.1.1",
+            username="admin",
+            password="password"
+        )
+        
+        # Should handle empty list gracefully
+        api.bulk_remove_addresses_from_list([])
+
+    def test_bulk_sync_address_list(self, mock_api_response):
+        """Test bulk_sync_address_list method."""
+        mock_api_response.status_code = 200
+        
+        with patch('requests.Session') as mock_session_class:
+            mock_session = Mock()
+            mock_session.put.return_value = mock_api_response
+            mock_session.delete.return_value = mock_api_response
+            mock_session_class.return_value = mock_session
+            
+            api = MikroTikApi(
+                base_url="192.168.1.1",
+                username="admin",
+                password="password"
+            )
+            
+            addresses_to_add = [
+                {
+                    "ip_address": "192.168.1.10",
+                    "list_name": "clients_active",
+                    "comment": "John Doe"
+                }
+            ]
+            
+            addresses_to_remove = [
+                {
+                    "entry_id": "1",
+                    "ip_address": "192.168.1.20",
+                    "list_name": "clients_active"
+                }
+            ]
+            
+            # Should not raise an exception
+            api.bulk_sync_address_list(
+                list_name="clients_active",
+                addresses_to_add=addresses_to_add,
+                addresses_to_remove=addresses_to_remove
+            )
+
+    def test_bulk_sync_address_list_empty(self):
+        """Test bulk_sync_address_list with empty data."""
+        api = MikroTikApi(
+            base_url="192.168.1.1",
+            username="admin",
+            password="password"
+        )
+        
+        # Should handle empty lists gracefully
+        api.bulk_sync_address_list(
+            list_name="clients_active",
+            addresses_to_add=[],
+            addresses_to_remove=[]
+        )
+
+    def test_get_address_list_bulk_all(self, mock_mikrotik_address_lists, mock_api_response):
+        """Test get_address_list_bulk method for all lists."""
+        mock_api_response.json.return_value = mock_mikrotik_address_lists
+        
+        with patch('utils.base.requests.request', return_value=mock_api_response):
+            api = MikroTikApi(
+                base_url="192.168.1.1",
+                username="admin",
+                password="password"
+            )
+            
+            result = api.get_address_list_bulk()
+            
+            # Should return a dictionary with list names as keys
+            assert isinstance(result, dict)
+            assert "clients_active" in result
+            assert "clients_suspended" in result
+            assert "clients_all" in result
+
+    def test_get_address_list_bulk_specific(self, mock_mikrotik_address_lists, mock_api_response):
+        """Test get_address_list_bulk method for specific lists."""
+        # Filter for active list only
+        active_addresses = [addr for addr in mock_mikrotik_address_lists if addr["list"] == "clients_active"]
+        mock_api_response.json.return_value = active_addresses
+        
+        with patch('utils.base.requests.request', return_value=mock_api_response):
+            api = MikroTikApi(
+                base_url="192.168.1.1",
+                username="admin",
+                password="password"
+            )
+            
+            result = api.get_address_list_bulk(list_names=["clients_active"])
+            
+            # Should return a dictionary with only the requested list
+            assert isinstance(result, dict)
+            assert "clients_active" in result
+            assert len(result) == 1
+
+    def test_get_entry_ids_bulk(self, mock_mikrotik_address_lists, mock_api_response):
+        """Test get_entry_ids_bulk method."""
+        mock_api_response.json.return_value = mock_mikrotik_address_lists
+        
+        with patch('utils.base.requests.request', return_value=mock_api_response):
+            api = MikroTikApi(
+                base_url="192.168.1.1",
+                username="admin",
+                password="password"
+            )
+            
+            addresses_to_remove = [
+                {
+                    "ip_address": "192.168.1.10",
+                    "list_name": "clients_active"
+                },
+                {
+                    "ip_address": "192.168.1.30",
+                    "list_name": "clients_suspended"
+                }
+            ]
+            
+            result = api.get_entry_ids_bulk(addresses_to_remove)
+            
+            # Should return list with entry IDs added
+            assert len(result) == 2
+            assert all('entry_id' in addr for addr in result)
+            assert result[0]['entry_id'] == '1'  # From mock data
+            assert result[1]['entry_id'] == '3'  # From mock data
+
+    def test_get_entry_ids_bulk_empty(self):
+        """Test get_entry_ids_bulk with empty data."""
+        api = MikroTikApi(
+            base_url="192.168.1.1",
+            username="admin",
+            password="password"
+        )
+        
+        result = api.get_entry_ids_bulk([])
+        assert result == []
+
+    def test_get_entry_ids_bulk_not_found(self, mock_mikrotik_address_lists, mock_api_response):
+        """Test get_entry_ids_bulk with addresses not found."""
+        mock_api_response.json.return_value = mock_mikrotik_address_lists
+        
+        with patch('utils.base.requests.request', return_value=mock_api_response):
+            api = MikroTikApi(
+                base_url="192.168.1.1",
+                username="admin",
+                password="password"
+            )
+            
+            addresses_to_remove = [
+                {
+                    "ip_address": "192.168.1.999",  # Not in mock data
+                    "list_name": "clients_active"
+                }
+            ]
+            
+            result = api.get_entry_ids_bulk(addresses_to_remove)
+            
+            # Should return empty list for not found addresses
+            assert len(result) == 0
