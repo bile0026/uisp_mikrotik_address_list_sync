@@ -2,11 +2,33 @@ import datetime
 import ipaddress
 import logging
 import os
+import argparse
 
 from utils import send_healthcheck_ping
 
-logging.basicConfig(level=logging.INFO)
+# Global debug flag
+DEBUG_MODE = False
+
+def parse_arguments():
+    """Parse command line arguments."""
+    parser = argparse.ArgumentParser(description='UISP MikroTik Address List Sync')
+    parser.add_argument('--debug', action='store_true', 
+                       help='Enable detailed debug logging')
+    return parser.parse_args()
+
+# Parse command line arguments
+args = parse_arguments()
+DEBUG_MODE = args.debug
+
+# Set logging level based on debug mode
+log_level = logging.DEBUG if DEBUG_MODE else logging.INFO
+logging.basicConfig(level=log_level)
 logger = logging.getLogger(__name__)
+
+def debug_log(message):
+    """Log debug message only if debug mode is enabled."""
+    if DEBUG_MODE:
+        logger.debug(message)
 
 
 # Create a file handler and set its properties
@@ -89,25 +111,60 @@ def load_uisp_addresses():
     services = ucrm_api.get_services()
     devices = uisp_api.get_devices()
 
+    debug_log(f"Loaded {len(clients)} clients, {len(services)} services, {len(devices)} devices")
+    
+    # Log all client names and IDs for easy searching
+    debug_log("All clients loaded:")
+    for client in clients:
+        debug_log(f"Client ID: {client['id']}, Name: {client['firstName']} {client['lastName']}")
+
     for client in clients:
         _client_id = client["id"]
-        _client_ip = lookup_client_ip(
-            devices=devices, services=services, client_id=_client_id
-        )
         _client_name = f'{client["firstName"]} {client["lastName"]}'
+        
+        debug_log(f"Processing client ID {_client_id} - {_client_name}")
+        
+        _client_ip = lookup_client_ip(
+            devices=devices, services=services, client_id=_client_id, debug_mode=DEBUG_MODE
+        )
+        debug_log(f"Client {_client_id} IP: {_client_ip}")
+        
         _service_id = lookup_service_id(services=services, client_id=_client_id)
+        debug_log(f"Client {_client_id} service_id: {_service_id}")
+        
         _service_status = lookup_service_status(services=services, client_id=_client_id)
+        debug_log(f"Client {_client_id} service_status (raw): {_service_status}")
+        
+        _mapped_status = service_status_map.get(_service_status)
+        debug_log(f"Client {_client_id} service_status (mapped): {_mapped_status}")
+
+        # Skip clients without IP address
+        if _client_ip is None:
+            logger.warning(f"Skipping client {_client_id} ({_client_name}) - no IP address found")
+            continue
+            
+        # Skip clients without service
+        if _service_id is None:
+            logger.warning(f"Skipping client {_client_id} ({_client_name}) - no service found")
+            continue
+            
+        # Skip clients with no service status
+        if _service_status is None:
+            logger.warning(f"Skipping client {_client_id} ({_client_name}) - no service status found")
+            continue
 
         new_client = UISPClientAddress(
             ip_address=_client_ip,
             client_name=_client_name,
             client_id=_client_id,
             service_id=_service_id,
-            service_status=service_status_map.get(_service_status),
+            service_status=_mapped_status,
         )
 
+        debug_log(f"Adding client {_client_id} to list with status: {_mapped_status}")
         client_list.append(new_client)
 
+    debug_log(f"Total clients added to list: {len(client_list)}")
     return client_list
 
 
@@ -187,6 +244,13 @@ def compare_addresses(list_type, uisp_ips, mikrotik_ips):
         object_list=uisp_ips, key="service_status", value=list_type
     )
 
+    debug_log(f"{list_type} comparison - UISP addresses with status '{list_type}': {len(uisp_addresses)}")
+    debug_log(f"{list_type} comparison - MikroTik addresses: {len(mikrotik_ips)}")
+    
+    # Log all UISP addresses for this status
+    for addr in uisp_addresses:
+        debug_log(f"UISP {list_type} address: {getattr(addr, 'ip_address', 'N/A')} (client: {getattr(addr, 'client_name', 'N/A')}, ID: {getattr(addr, 'client_id', 'N/A')})")
+
     addresses_missing_uisp = find_missing_items(
         objects1=mikrotik_ips, objects2=uisp_addresses
     )
@@ -194,11 +258,27 @@ def compare_addresses(list_type, uisp_ips, mikrotik_ips):
         objects1=uisp_addresses, objects2=mikrotik_ips
     )
 
+    debug_log(f"{list_type} - Missing from UISP: {len(addresses_missing_uisp)}")
+    debug_log(f"{list_type} - Missing from MikroTik: {len(addresses_missing_mikrotik)}")
+    
+    # Log missing addresses
+    for addr in addresses_missing_uisp:
+        debug_log(f"{list_type} missing from UISP: {addr.ip_address} (comment: {getattr(addr, 'comment', 'N/A')})")
+    for addr in addresses_missing_mikrotik:
+        debug_log(f"{list_type} missing from MikroTik: {getattr(addr, 'ip_address', 'N/A')} (client: {getattr(addr, 'client_name', 'N/A')}, ID: {getattr(addr, 'client_id', 'N/A')})")
+
     return addresses_missing_uisp, addresses_missing_mikrotik
 
 
 def compare_all_addresses(uisp_ips, mikrotik_ips):
     """Compare what's loaded from UISP to what's on the MikroTik. Returns addresses missing from UISP or MikroTik."""
+
+    debug_log(f"all comparison - UISP addresses: {len(uisp_ips)}")
+    debug_log(f"all comparison - MikroTik addresses: {len(mikrotik_ips)}")
+    
+    # Log all UISP addresses
+    for addr in uisp_ips:
+        debug_log(f"UISP all address: {getattr(addr, 'ip_address', 'N/A')} (client: {getattr(addr, 'client_name', 'N/A')}, ID: {getattr(addr, 'client_id', 'N/A')}, status: {getattr(addr, 'service_status', 'N/A')})")
 
     addresses_missing_uisp = find_missing_items(
         objects1=mikrotik_ips, objects2=uisp_ips
@@ -206,6 +286,15 @@ def compare_all_addresses(uisp_ips, mikrotik_ips):
     addresses_missing_mikrotik = find_missing_items(
         objects1=uisp_ips, objects2=mikrotik_ips
     )
+
+    debug_log(f"all - Missing from UISP: {len(addresses_missing_uisp)}")
+    debug_log(f"all - Missing from MikroTik: {len(addresses_missing_mikrotik)}")
+    
+    # Log missing addresses
+    for addr in addresses_missing_uisp:
+        debug_log(f"all missing from UISP: {addr.ip_address} (comment: {getattr(addr, 'comment', 'N/A')})")
+    for addr in addresses_missing_mikrotik:
+        debug_log(f"all missing from MikroTik: {getattr(addr, 'ip_address', 'N/A')} (client: {getattr(addr, 'client_name', 'N/A')}, ID: {getattr(addr, 'client_id', 'N/A')}, status: {getattr(addr, 'service_status', 'N/A')})")
 
     return addresses_missing_uisp, addresses_missing_mikrotik
 
@@ -246,7 +335,7 @@ def sync_addresses():
         mikrotik_ips=mikrotik_active_addresses,
     )
     logger.debug(
-        f"\n\nActive missing from UISP: {addresses_active_missing_uisp}\Active missing from MikroTik: {addresses_active_missing_mikrotik}"
+        f"\n\nActive missing from UISP: {addresses_active_missing_uisp}\nActive missing from MikroTik: {addresses_active_missing_mikrotik}"
     )
 
     (
@@ -257,7 +346,7 @@ def sync_addresses():
         mikrotik_ips=mikrotik_all_addresses,
     )
     logger.debug(
-        f"\n\nAll missing from UISP: {addresses_all_missing_uisp}\All missing from MikroTik: {addresses_all_missing_mikrotik}"
+        f"\n\nAll missing from UISP: {addresses_all_missing_uisp}\nAll missing from MikroTik: {addresses_all_missing_mikrotik}"
     )
 
     # Prepare bulk operations for suspended addresses
@@ -360,6 +449,9 @@ def sync_addresses():
 
 
 if __name__ == "__main__":
+    if DEBUG_MODE:
+        logger.info("Debug mode enabled - detailed logging will be shown")
+    
     sync_addresses()
 
     if module_config.send_health_check:

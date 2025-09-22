@@ -28,6 +28,10 @@ After the virtual environment is created and dependencies installed. Take note o
 
 * Before setting up to run as a cron job it would be best to run the job once with `python uisp_mikrotik_address_list_sync.py` (with the venv activated) to make sure you do not receive any errors.
 
+## Debug
+
+Run script with `--debug` to enable debug logging to troubleshoot sync issues. 
+
 ## Schedule Job to Run
 
 To setup the job to run on a schedule run `crontab -e` to open the cron file. You can use a tool like [Cron Expression Generator](https://crontab.cronhub.io/) to help with the syntax. The entry should look something like the following (this will run the sync every 15 min):
