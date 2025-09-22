@@ -1,6 +1,13 @@
 """ Utility functions for working with UISP and MikroTik RouterOS """
 
-from distutils.util import strtobool
+def strtobool(val: str) -> bool:
+    val = val.lower()
+    if val in ("y", "yes", "t", "true", "on", "1"):
+        return True
+    elif val in ("n", "no", "f", "false", "off", "0"):
+        return False
+    else:
+        raise ValueError(f"invalid truth value {val!r}")
 import logging
 import requests
 import random
@@ -53,26 +60,62 @@ def lookup_service_status(services, client_id):
     return None
 
 
-def lookup_client_ip(devices, services, client_id):
+def lookup_client_ip(devices, services, client_id, debug_mode=False):
     """Lookup a client IP address by client Id. Returns the IP if found, otherwise None."""
+    if debug_mode:
+        logger.debug(f"Looking up IP for client_id: {client_id}")
+    
+    # First, find the service for this client
+    client_service = None
     for service in services:
         if service.get("clientId") == client_id:
-            for device in devices:
-                # Log warning if device is missing identification or site data
-                if not device.get("identification") or not device["identification"].get("site"):
-                    device_name = device.get("identification", {}).get("name", "Unknown device")
-                    logger.warning(f"Device '{device_name}' (client ID: {client_id}) has no site assignment")
-                    continue
+            client_service = service
+            if debug_mode:
+                logger.debug(f"Found service for client {client_id}: {service}")
+            break
+    
+    if not client_service:
+        if debug_mode:
+            logger.debug(f"No service found for client_id: {client_id}")
+        return None
+    
+    if debug_mode:
+        logger.debug(f"Service unmsClientSiteId: {client_service.get('unmsClientSiteId')}")
+    
+    # Now look for devices matching the site
+    for device in devices:
+        device_name = device.get("identification", {}).get("name", "Unknown device")
+        if debug_mode:
+            logger.debug(f"Checking device: {device_name}")
+        
+        # Log warning if device is missing identification or site data
+        if not device.get("identification") or not device["identification"].get("site"):
+            logger.warning(f"Device '{device_name}' (client ID: {client_id}) has no site assignment")
+            continue
 
-                if device["identification"]["site"].get("id") == service["unmsClientSiteId"]:
-                    if device.get("ipAddress"):
-                        return device.get("ipAddress").split("/")[0]
-                    else:
-                        device_name = device["identification"].get("name", "Unknown device")
-                        logger.warning(f"Device '{device_name}' (client ID: {client_id}) has no IP address, using fallback")
-                        # TODO: Better handling of devices without an IP.
-                        _num = random.randint(2, 254)
-                        return f"192.0.0.{_num}"
+        device_site_id = device["identification"]["site"].get("id")
+        if debug_mode:
+            logger.debug(f"Device {device_name} site_id: {device_site_id}")
+        
+        if device_site_id == client_service["unmsClientSiteId"]:
+            if debug_mode:
+                logger.debug(f"Device {device_name} matches service site")
+            if device.get("ipAddress"):
+                ip = device.get("ipAddress").split("/")[0]
+                if debug_mode:
+                    logger.debug(f"Found IP for client {client_id}: {ip}")
+                return ip
+            else:
+                logger.warning(f"Device '{device_name}' (client ID: {client_id}) has no IP address, using fallback")
+                # TODO: Better handling of devices without an IP.
+                _num = random.randint(2, 254)
+                fallback_ip = f"192.0.0.{_num}"
+                if debug_mode:
+                    logger.debug(f"Using fallback IP for client {client_id}: {fallback_ip}")
+                return fallback_ip
+    
+    if debug_mode:
+        logger.debug(f"No matching device found for client_id: {client_id}")
     return None
 
 
